@@ -23,7 +23,17 @@ class RangeDatepickerCalendar extends Polymer.Element {
       _daysOfMonth: Array,
       locale: {
         type: String,
-        value: 'en',
+        value: () => {
+          if (window.Intl) {
+            return (window.Intl
+              && window.Intl.DateTimeFormat
+              && window.Intl.DateTimeFormat().resolvedOptions
+              && window.Intl.DateTimeFormat().resolvedOptions().locale)
+              || 'en-US';
+          }
+
+          return 'en-US';
+        },
         observer: '_localeChanged',
       },
       dateTo: {
