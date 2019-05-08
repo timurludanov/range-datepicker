@@ -146,6 +146,7 @@
           verticalAlign: {
             type: String,
             value: 'bottom',
+            observer: '_verticalChanged'
           },
           _isNarrow: Function,
           _parentTemplate: {
@@ -304,6 +305,10 @@
         if (dateTo) {
           this.instance.dateTo = dateTo;
         }
+      }
+
+      _verticalChanged() {
+        console.log('vertical: ', this.verticalAlign);
       }
 
       get _itemsParent() {
