@@ -143,6 +143,10 @@
             type: String,
             value: 'left',
           },
+          verticalAlign: {
+            type: String,
+            value: 'bottom',
+          },
           _isNarrow: Function,
           _parentTemplate: {
             type: Element,
@@ -188,7 +192,7 @@
               <slot></slot>
             </div>
 
-            <iron-dropdown no-overlap vertical-align="top" allow-outside-scroll horizontal-align="[[horizontalAlign]]">
+            <iron-dropdown no-overlap vertical-align="top" allow-outside-scroll horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]">
               <paper-material slot="dropdown-content">
                 <dom-if if="[[!forceNarrow]]">
                   <template>
