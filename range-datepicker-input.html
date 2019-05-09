@@ -5,6 +5,7 @@
 
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
 
 <link rel="import" href="range-datepicker-calendar.html">
 <link rel="import" href="range-datepicker-behavior.html">
@@ -146,7 +147,6 @@
           verticalAlign: {
             type: String,
             value: 'bottom',
-            observer: '_verticalChanged'
           },
           _isNarrow: Function,
           _parentTemplate: {
@@ -187,47 +187,54 @@
               padding: 16px;
               display: block;
             }
+
+            .force-narrow {
+              margin: 10px;
+              padding: 0px;
+            }
           </style>
           <iron-media-query query="(max-width: 650px)" query-matches="{{narrow}}"></iron-media-query>
             <div id="trigger" on-tap="_handleOpenDropdown">
               <slot></slot>
             </div>
 
-            <iron-dropdown no-overlap vertical-align="[[verticalAlign]]" allow-outside-scroll horizontal-align="[[horizontalAlign]]">
-              <paper-material slot="dropdown-content">
-                <dom-if if="[[!forceNarrow]]">
-                  <template>
-                    <dom-if if="[[!narrow]]">
-                      <template>
-                        <div class="layout vertical center-justified">
-                          <div class="layout horizontal">
-                            <range-datepicker-calendar disabled-days="[[disabledDays]]" min="[[min]]" max="[[max]]" on-new-year-is-manually-selected="_handleNewYearSelected"
-                              enable-year-change="[[enableYearChange]]" prev no-range="[[noRange]]" on-prev-month="_handlePrevMonth"
-                              hovered-date="{{_hoveredDate}}" date-to="{{dateTo}}" date-from="{{dateFrom}}" id="firstDatePicker"
-                              locale="[[locale]]" month="[[month]]" year="[[year]]">
-                            </range-datepicker-calendar>
-                            <range-datepicker-calendar disabled-days="[[disabledDays]]" min="[[min]]" max="[[max]]" on-new-year-is-manually-selected="_handleNewYearSelected"
-                              enable-year-change="[[enableYearChange]]" next no-range="[[noRange]]" on-next-month="_handleNextMonth"
-                              hovered-date="{{_hoveredDate}}" date-to="{{dateTo}}" date-from="{{dateFrom}}" locale="[[locale]]"
-                              month="[[_monthPlus]]" year="[[_yearPlus]]">
-                            </range-datepicker-calendar>
+            <dom-if if="[[!forceNarrow]]">
+              <template>
+                <iron-dropdown no-overlap vertical-align="[[verticalAlign]]" allow-outside-scroll horizontal-align="[[horizontalAlign]]">
+                  <paper-material slot="dropdown-content">
+                      <dom-if if="[[!narrow]]">
+                        <template>
+                          <div class="layout vertical center-justified">
+                            <div class="layout horizontal">
+                              <range-datepicker-calendar disabled-days="[[disabledDays]]" min="[[min]]" max="[[max]]" on-new-year-is-manually-selected="_handleNewYearSelected"
+                                enable-year-change="[[enableYearChange]]" prev no-range="[[noRange]]" on-prev-month="_handlePrevMonth"
+                                hovered-date="{{_hoveredDate}}" date-to="{{dateTo}}" date-from="{{dateFrom}}" id="firstDatePicker"
+                                locale="[[locale]]" month="[[month]]" year="[[year]]">
+                              </range-datepicker-calendar>
+                              <range-datepicker-calendar disabled-days="[[disabledDays]]" min="[[min]]" max="[[max]]" on-new-year-is-manually-selected="_handleNewYearSelected"
+                                enable-year-change="[[enableYearChange]]" next no-range="[[noRange]]" on-next-month="_handleNextMonth"
+                                hovered-date="{{_hoveredDate}}" date-to="{{dateTo}}" date-from="{{dateFrom}}" locale="[[locale]]"
+                                month="[[_monthPlus]]" year="[[_yearPlus]]">
+                              </range-datepicker-calendar>
+                            </div>
                           </div>
-                        </div>
-                      </template>
-                    </dom-if>
-                  </template>
-                </dom-if>
-                <dom-if if="[[_isNarrow(forceNarrow, narrow)]]">
-                  <template>
-                    <range-datepicker-calendar disabled-days="[[disabledDays]]" min="[[min]]" max="[[max]]" enable-year-change="[[enableYearChange]]"
-                      narrow="[[_isNarrow(forceNarrow, narrow)]]" hovered-date="{{_hoveredDate}}" date-to="{{dateTo}}"
-                      date-from="{{dateFrom}}" locale="[[locale]]" month="[[month]]" year="[[year]]" no-range="[[noRange]]"
-                      next prev>
-                    </range-datepicker-calendar>
-                  </template>
-                </dom-if>
-              </paper-material>
-            </iron-dropdown>`;
+                        </template>
+                      </dom-if>
+                  </paper-material>
+                </iron-dropdown>
+              </template>
+            </dom-if>
+            <dom-if if="[[_isNarrow(forceNarrow, narrow)]]">
+              <template>
+                <paper-dialog modal>
+                  <range-datepicker-calendar class="force-narrow" disabled-days="[[disabledDays]]" min="[[min]]" max="[[max]]" enable-year-change="[[enableYearChange]]"
+                    narrow="[[_isNarrow(forceNarrow, narrow)]]" hovered-date="{{_hoveredDate}}" date-to="{{dateTo}}"
+                    date-from="{{dateFrom}}" locale="[[locale]]" month="[[month]]" year="[[year]]" no-range="[[noRange]]"
+                    next prev>
+                  </range-datepicker-calendar>
+                </paper-dialog>
+              </template>
+            </dom-if>`;
       }
 
       static get observers() {
@@ -235,11 +242,19 @@
       }
 
       _handleOpenDropdown() {
-        this.shadowRoot.querySelector('iron-dropdown').open();
+        if (!this.forceNarrow) {
+          this.shadowRoot.querySelector('iron-dropdown').open();
+        } else {
+          this.shadowRoot.querySelector('paper-dialog').open();
+        }
       }
 
       closeDropdown() {
-        this.shadowRoot.querySelector('iron-dropdown').close();
+        if (!this.forceNarrow) {
+          this.shadowRoot.querySelector('iron-dropdown').close();
+        } else {
+          this.shadowRoot.querySelector('paper-dialog').close();
+        }
       }
 
       _formatDate(date) {
@@ -254,7 +269,7 @@
       _dateFromChanged(date) {
         if (this.instance) {
           if (this.noRange && date) {
-            this.shadowRoot.querySelector('iron-dropdown').close();
+            this.closeDropdown();
           }
           this.instance.dateFrom = this._formatDate(this.dateFrom);
         }
@@ -263,7 +278,7 @@
       _dateToChanged(date) {
         if (this.instance) {
           if (date) {
-            this.shadowRoot.querySelector('iron-dropdown').close();
+            this.closeDropdown();
           }
           this.instance.dateTo = this._formatDate(this.dateTo);
           this.instance.dateFrom = this._formatDate(this.dateFrom);
@@ -305,10 +320,6 @@
         if (dateTo) {
           this.instance.dateTo = dateTo;
         }
-      }
-
-      _verticalChanged() {
-        console.log('vertical: ', this.verticalAlign);
       }
 
       get _itemsParent() {
