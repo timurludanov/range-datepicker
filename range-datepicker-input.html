@@ -191,6 +191,7 @@
             paper-dialog {
               --paper-dialog: {
                 max-width: 280px;
+                z-index: 1000;
               }
             }
 
@@ -292,6 +293,7 @@
       }
 
       connectedCallback() {
+        console.log('new z-index on paper-dialog');
         if (!this.ctor) {
           const props = {
             __key__: true,
