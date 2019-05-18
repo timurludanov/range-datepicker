@@ -76,6 +76,10 @@
            * Default is current month.
            */
           month: String,
+          extCalendarDialog: {
+            type: Boolean,
+            value: false
+          },
           _monthPlus: String,
           _yearPlus: Number,
           /**
@@ -191,7 +195,6 @@
             paper-dialog {
               --paper-dialog: {
                 max-width: 280px;
-                z-index: 1000;
               }
             }
 
@@ -231,7 +234,7 @@
                 </iron-dropdown>
               </template>
             </dom-if>
-            <dom-if if="[[_isNarrow(forceNarrow, narrow)]]">
+            <dom-if if="[[_isNarrow(forceNarrow, narrow, extCalendarDialog)]]">
               <template>
                 <paper-dialog>
                   <range-datepicker-calendar class="force-narrow" disabled-days="[[disabledDays]]" min="[[min]]" max="[[max]]" enable-year-change="[[enableYearChange]]"
@@ -248,19 +251,30 @@
         return ['_monthChanged(month, year)'];
       }
 
-      _handleOpenDropdown() {
+      _handleOpenDropdown(e) {
         if (!this.forceNarrow) {
           this.shadowRoot.querySelector('iron-dropdown').open();
-        } else {
+        } else if (this.forceNarrow && !this.extCalendarDialog) {
           this.shadowRoot.querySelector('paper-dialog').open();
+        } else if (this.forceNarrow && this.extCalendarDialog) {
+          this._idInput = e.detail.sourceEvent.target.id;
+          const detail = {
+            idInput: this._idInput
+          };
+          this.dispatchEvent(new CustomEvent('open-dialog', {bubbles: true, composed: true, detail}));
         }
       }
 
       closeDropdown() {
         if (!this.forceNarrow) {
           this.shadowRoot.querySelector('iron-dropdown').close();
-        } else {
+        } else if(this.forceNarrow && !this.extCalendarDialog) {
           this.shadowRoot.querySelector('paper-dialog').close();
+        } else if (this.forceNarrow && this.extCalendarDialog)  {
+          const detail = {
+            idInput: this._idInput
+          };
+          this.dispatchEvent(new CustomEvent('close-dialog', {bubbles: true, composed: true, detail}));
         }
       }
 
@@ -275,7 +289,7 @@
 
       _dateFromChanged(date) {
         if (this.instance) {
-          if (this.noRange && date) {
+          if ((this.noRange || (this.forceNarrow && this.extCalendarDialog)) && date) {
             this.closeDropdown();
           }
           this.instance.dateFrom = this._formatDate(this.dateFrom);
@@ -293,7 +307,6 @@
       }
 
       connectedCallback() {
-        console.log('new z-index on paper-dialog');
         if (!this.ctor) {
           const props = {
             __key__: true,
