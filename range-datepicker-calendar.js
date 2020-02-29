@@ -266,7 +266,7 @@ class RangeDatepickerCalendar extends Polymer.Element {
   ready() {
     super.ready();
     const yearsList = [];
-    for (let i = 1970; i <= 2100; i += 1) {
+    for (let i = 1900; i <= 2100; i += 1) {
       yearsList.push(i);
     }
     this.set('_yearsList', yearsList);
